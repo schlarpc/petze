@@ -58,7 +58,7 @@ def get_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
 
     return parser.parse_args(argv)
 
-
+import decimal
 def main(argv: Optional[List[str]] = None):
     args = get_args(argv)
     session = boto3.Session(region_name=args.region)
@@ -80,6 +80,18 @@ def main(argv: Optional[List[str]] = None):
             )
             for item in response['Items']:
                 print(json.dumps(item, separators=(",", ":"), default=dynamodb_to_json_default))
+        elif args.command == 'list':
+            kwargs = {}
+            while True:
+                response = table.scan(
+                    Limit=1,
+                    **kwargs
+                )
+                if not response["Items"]:
+                    break
+                for item in response['Items']:
+                    kwargs = {"ExclusiveStartKey": {"probe": item['probe'], "type": "~"}}
+                    print(item['probe'])
     # for item in paginate_table(
     # table.query,
     # IndexName="ProbeTimestamp",
