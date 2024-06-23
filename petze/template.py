@@ -334,7 +334,7 @@ def create_template():
         Parameter("SlackWebhookUrl", Type="String")
     )
 
-    additional_subdomains = []
+    additional_subdomains = sorted(set())
 
     storage_bucket = template.add_resource(
         Bucket(
@@ -835,12 +835,12 @@ def create_template():
     )
 
     for additional_subdomain in additional_subdomains:
-        suffix = hashlib.sha256(additional_subdomain.encode('utf-8')).hexdigest()[:12]
+        suffix = hashlib.sha256(additional_subdomain.encode('utf-8')).hexdigest().upper()[:12]
 
         api_domain_name_wildcard_additional = template.add_resource(
             DomainName(
                 f"ApiDomainNameWildcard{suffix}",
-                DomainName=Join(".", ["*", "s3", Ref(domain_name)]),
+                DomainName=Join(".", ["*", additional_subdomain, Ref(domain_name)]),
                 RegionalCertificateArn=Ref(certificate),
                 EndpointConfiguration=EndpointConfiguration(Types=["REGIONAL"]),
             )
