@@ -332,6 +332,9 @@ def create_template():
     slack_webhook_url = template.add_parameter(
         Parameter("SlackWebhookUrl", Type="String")
     )
+
+    additional_subdomains = []
+
     storage_bucket = template.add_resource(
         Bucket(
             "StorageBucket",
@@ -603,6 +606,10 @@ def create_template():
             SubjectAlternativeNames=[
                 Ref(domain_name),
                 Join(".", ["*", Ref(domain_name)]),
+                *[
+                    Join(".", ["*", additional_subdomain, Ref(domain_name)])
+                    for additional_subdomain in additional_subdomains
+                ],
             ],
             ValidationMethod="DNS",
             Tags=Tags(
@@ -825,6 +832,27 @@ def create_template():
             Stage=Ref(api_stage),
         )
     )
+
+    for additional_subdomain in additional_subdomains:
+        suffix = hashlib.sha256(additional_subdomain.encode('utf-8')).hexdigest()[:12]
+
+        api_domain_name_wildcard_additional = template.add_resource(
+            DomainName(
+                f"ApiDomainNameWildcard{suffix}",
+                DomainName=Join(".", ["*", "s3", Ref(domain_name)]),
+                RegionalCertificateArn=Ref(certificate),
+                EndpointConfiguration=EndpointConfiguration(Types=["REGIONAL"]),
+            )
+        )
+
+        api_mapping_wildcard_additional = template.add_resource(
+            BasePathMapping(
+                f"ApiMappingWildcard{suffix}",
+                DomainName=Ref(api_domain_name_wildcard_additional),
+                RestApiId=Ref(api),
+                Stage=Ref(api_stage),
+            )
+        )
 
     domain_verification_custom_resource_function = create_lambda(
         template,
