@@ -312,7 +312,7 @@ def create_certificate_validation_child_template():
             Name=Ref(record_name),
             ResourceRecords=[Ref(record_value)],
             Type="CNAME",
-            TTL=300,
+            TTL=str(300),
             Condition=record_is_defined,
         )
     )
@@ -785,8 +785,6 @@ def create_template():
                 MethodSetting(
                     HttpMethod="*",
                     ResourcePath="/*",
-                    ThrottlingBurstLimit=IgnorePropertyType(-1),
-                    ThrottlingRateLimit=IgnorePropertyType(-1),
                 ),
             ],
         )
@@ -1031,7 +1029,7 @@ def create_template():
                 RecordSet(
                     Name=Ref(domain_name),
                     Type="MX",
-                    TTL=300,
+                    TTL=str(300),
                     ResourceRecords=[
                         Join(
                             " ",
@@ -1042,7 +1040,7 @@ def create_template():
                 RecordSet(
                     Name=Join(".", ["*", Ref(domain_name)]),
                     Type="MX",
-                    TTL=300,
+                    TTL=str(300),
                     ResourceRecords=[
                         Join(
                             " ",
@@ -1053,7 +1051,7 @@ def create_template():
                 RecordSet(
                     Name=Join(".", ["_amazonses", Ref(domain_name)]),
                     Type="TXT",
-                    TTL=300,
+                    TTL=str(300),
                     ResourceRecords=[
                         Join(
                             "",
