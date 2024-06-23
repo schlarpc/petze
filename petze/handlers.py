@@ -25,7 +25,7 @@ JSONType = Union[str, float, int, bool, None, Dict[str, Any], List[Any]]
 
 
 def extract_probe_name_from_domain(request_domain: str) -> str:
-    pattern = r"^([a-z0-9]+)\." + re.escape(os.environ["PETZE_DOMAIN_NAME"]) + r"\.?$"
+    pattern = r"^([A-Za-z0-9\.-]+)\." + re.escape(os.environ["PETZE_DOMAIN_NAME"]) + r"\.?$"
     if match := re.match(pattern, request_domain):
         return match.group(1)
     return ""
